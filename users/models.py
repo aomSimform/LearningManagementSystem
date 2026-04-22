@@ -57,7 +57,7 @@ class User(AbstractUser):
     def save(self,*args,**kwargs):
         is_new = self.pk is None 
         if is_new and self.role==UserRoles.Student:
-            self.is_instructor_approved = True
+            self.is_instructor_approved = True 
         super().save(*args,**kwargs)
         if is_new and self.role==UserRoles.Student:
             StudentProfile.objects.create(user=self)
@@ -69,7 +69,7 @@ class InstructorProfile(models.Model):
     user = models.OneToOneField('users.User',on_delete=models.CASCADE)
     profile_picture = models.ImageField(upload_to = 'profile/instructors/', null=True, blank = True)
     expertise = models.CharField(max_length=200)
-    experience_years = models.IntegerField(default=0)
+    experience_years = models.IntegerField(default=0)   
     qualification = models.TextField()
     
     def __str__(self):
