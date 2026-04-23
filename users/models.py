@@ -40,13 +40,17 @@ class User(AbstractUser):
     username = None 
     role = models.CharField(choices = UserRoles.choices, max_length=100, default=UserRoles.Student)
     email = models.EmailField(unique = True)
+    last_name = models.CharField(max_length=100)
     is_instructor_approved = models.BooleanField(default=False)
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['first_name','last_name']
     objects = UserManager()
     def __str__(self):
-        return self.first_name+" "+self.last_name
+        return self.email
     
+    def clean(self):
+        super().clean()
+        print("It is cleaned:-")
     @property
     def can_access_instructor_features(self):
         return (
@@ -82,6 +86,9 @@ class StudentProfile(models.Model):
 
     def __str__(self):
         return str(self.user) 
+    
+    
+    
     
     
     
