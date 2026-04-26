@@ -24,7 +24,7 @@ class SubsectionAdmin(admin.ModelAdmin):
     ordering = ("course", "topic")  # grouped by course, then alphabetical
 
 
-@admin.register(Assignments)
-class AssignmentsAdmin(admin.ModelAdmin):
-    list_display = ("id", "topic", "subsection")
-    ordering = ("subsection", "topic")
+# @admin.register(Assignments)
+# class AssignmentsAdmin(admin.ModelAdmin):
+#     list_display = ("id", "topic", "subsection")
+#     ordering = ("subsection", "topic")

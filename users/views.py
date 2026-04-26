@@ -6,7 +6,8 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import get_user_model
 from rest_framework.permissions import IsAuthenticated
-
+from django.db import transaction 
+from users.tasks import send_mail, send_admin_mail
 USER = get_user_model()
 # Create your views here.
 
@@ -15,6 +16,10 @@ class registerViewSet(APIView):
         user = UserCreationSerializer(data  = request.data)
         if user.is_valid():
             user.save()
+            print(user.data)
+            print('hekfomevk')
+            transaction.on_commit(lambda:send_mail.delay(user.data))
+            transaction.on_commit(lambda:send_admin_mail.delay(user.data))
             print(request.data)
             return Response(user.data,status=200)
         return Response(user.errors,status=400) 
