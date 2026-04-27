@@ -6,7 +6,12 @@ class Enrolled(models.Model):
     user = models.ForeignKey('users.User',on_delete=models.CASCADE)
     course = models.ForeignKey('Courses',on_delete=models.CASCADE)
     enrolled_at = models.DateTimeField(auto_now_add = True)
-    
+    class Meta:
+        constraints=[
+            models.UniqueConstraint(
+                fields=['user','course'],name='unique_user_course'
+            )
+        ]
 class Courses(models.Model):
     title = models.CharField(max_length=300,unique=True)
     description = models.TextField()
@@ -27,10 +32,11 @@ class Subsection(models.Model):
         return self.topic
     
 class Assignments(models.Model):
-    subsection = models.ForeignKey('Subsection',on_delete = models.SET_NULL,related_name = 'assignments',null=True, blank=True)
-    topic = models.CharField(max_length=200)
-    description = models.TextField()
-    file = models.FileField(upload_to = 'assignments/',null=True, blank=True)
+    subsection = models.ForeignKey('Subsection',on_delete = models.CASCADE,related_name = 'assignments')
+    file = models.FileField(upload_to = 'assignments/')
+    deadline = models.DateTimeField()
+    user=models.ManyToManyField('users.User',through = 'submissions.Submissions',related_name = 'submitted_assignments')
+    grades = models.ManyToManyField('users.User',through = 'grading.Gradings',related_name = 'assignments_grades')
     
     def __str__(self):
         return self.topic

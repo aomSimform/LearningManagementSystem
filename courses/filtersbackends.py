@@ -3,7 +3,5 @@ from django.core.exceptions import ValidationError
 
 class SubsectionFilter(BaseFilterBackend):
     def filter_queryset(self,request,queryset, view):
-        if queryset.filter(course = view.kwargs['course']).exists():
-            queryset.filter(course = view.kwargs['course'])
-        return queryset
+        return queryset.filter(course = self.kwargs.get('course'))
     

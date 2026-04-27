@@ -5,11 +5,6 @@ from django.shortcuts import get_object_or_404
 
 
 class createCourse(serializers.ModelSerializer):
-    def validate(self,kwargs):
-        kwargs['created_by'] = self.context.get('request').user
-        print(kwargs)
-        print('cfndvbhvbvjnvjndivmfdvmf mdivfkim')
-        return kwargs
     def create(self,validated_data):
         validated_data['created_by']=self.context.get('request').user
         return Courses.objects.create(**validated_data)
@@ -26,28 +21,24 @@ class createCourse(serializers.ModelSerializer):
 
 
 
-class enrolledCourse(serializers.Serializer):
+class enrolledCourse(serializers.ModelSerializer):
     course = serializers.PrimaryKeyRelatedField(queryset = Courses.objects.all())
-    def validate_course(self,value):
-        print(value.id)
-        if Enrolled.objects.filter(course = value.id, user = self.context.get('request').user.id).exists():
-            raise ValidationError("you are already enrolled in ths course.")
-        return value
-    def create(self,validate_data):
-        print("validate_data:-",validate_data['course'])
-        enroll = Enrolled(user= self.context.get("request").user,course = validate_data['course'])
-        # print(enroll.user_id, enroll.course_id)
-        enroll.save()
-        print(enroll)
-        return enroll
+    user = serializers.PrimaryKeyRelatedField(read_only=True, default = serializers.CurrentUserDefault())
     def validate(self,validated_data):
         print(Enrolled.objects.filter(course = validated_data['course']).count(),validated_data['course'].seats)
         if Enrolled.objects.filter(course = validated_data['course']).count()>=validated_data['course'].seats:
             raise ValidationError('seats not available')
         return validated_data
     class Meta:
-        fields = ['course'] 
-        
+        model = Enrolled
+        fields = ['course','user'] 
+        validators = [
+            serializers.UniqueTogetherValidator(
+                queryset=Enrolled.objects.all(),
+                fields=["user", "course"],
+                message="You are already enrolled in this course."
+            )
+        ]
         
 class studentDetailCourse(serializers.ModelSerializer):
     instructor = serializers.CharField(source = 'created_by.first_name')
@@ -73,8 +64,9 @@ class ListCourses(serializers.ModelSerializer):
         
 class assignmentSerializer(serializers.ModelSerializer):
     class Meta:
-        fileds = "__all__" 
+        fields = "__all__" 
         model = Assignments
+        read_only_fields = ['subsection']
         
         
 class listSubsection(serializers.ModelSerializer):
@@ -82,15 +74,11 @@ class listSubsection(serializers.ModelSerializer):
     class Meta:
         fields = "__all__"
         model = Subsection   
-        
-        
+
         
 class createSubsection(serializers.ModelSerializer):
-    
-    def create(self,validated_data):
-        print(self.context)
-        validated_data['course'] = get_object_or_404(Courses,id = self.context.get('kwargs').get('course'))
-        return super().create(validated_data)
+    course = serializers.PrimaryKeyRelatedField(read_only=True)
+    assignments = assignmentSerializer(many=True,read_only=True)
     class Meta:
-        exclude = ["course"]
+        fields="__all__"
         model = Subsection
