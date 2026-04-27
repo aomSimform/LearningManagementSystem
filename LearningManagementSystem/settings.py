@@ -170,7 +170,6 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 MEDIA_URL = '/media/'
 
+CELERY_BROKER_URL = "redis://default:bJ7UdZd9ypLAC7f2SPcOHX5o7hEWH2ee@redis-12846.c244.us-east-1-2.ec2.cloud.redislabs.com:12846/0"
 
-CELERY_BROKER_URL = "redis://127.0.0.1:6379/0"
-
-CELERY_RESULT_BACKEND = "redis://127.0.0.1:6379/0"
+CELERY_RESULT_BACKEND = "redis://default:bJ7UdZd9ypLAC7f2SPcOHX5o7hEWH2ee@redis-12846.c244.us-east-1-2.ec2.cloud.redislabs.com:12846/0"

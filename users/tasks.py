@@ -16,5 +16,10 @@ def send_admin_mail(user):
     message = f"User with name:- {user.get('first_name')} {user.get('last_name')} has register as role:- {user.get('role')}"
     if user.get('role')=='instructor':
         message+='Accept it to make user registered.'
-    send_email(to_email = 'kapadiaaom78@gmail.com',subject='User Regristartion',body=message)
-    
+    send_email(to_email = 'kapadiaaom78@gmail.com',subject='User Regristration',body=message)
+
+
+@shared_task
+def send_instructor_approved_email(user):
+    message='admin approves you for an instructor now you can use your profile'
+    send_email(to_email=user['email'],subject='Permission Approved',body=message)

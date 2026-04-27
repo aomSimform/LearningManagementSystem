@@ -20,7 +20,7 @@ app.conf.beat_schedule = {
       "task":
       "courses.tasks.check_assignment_deadlines",
 
-      "schedule": 300.0
+      "schedule": 3.0
    }
 }
 

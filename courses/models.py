@@ -20,7 +20,7 @@ class Courses(models.Model):
     seats = models.IntegerField(validators=[MinValueValidator(0),MaxValueValidator(200)])
     students = models.ManyToManyField('users.User',through = Enrolled,related_name = 'courses')
     def __str__(self):  
-        return self.title
+        return self.title 
     # def enroll_student(self,user_id):
     #     Enrolled.objects.create(user = user_id, course = self)
 class Subsection(models.Model):
@@ -38,7 +38,5 @@ class Assignments(models.Model):
     user=models.ManyToManyField('users.User',through = 'submissions.Submissions',related_name = 'submitted_assignments')
     grades = models.ManyToManyField('users.User',through = 'grading.Gradings',related_name = 'assignments_grades')
     
-    def __str__(self):
-        return self.topic
     
     

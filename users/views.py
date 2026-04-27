@@ -8,11 +8,9 @@ from django.contrib.auth import get_user_model
 from rest_framework.permissions import IsAuthenticated
 from django.db import transaction 
 from users.tasks import send_mail, send_admin_mail
-from rest_framework.permissions import IsAuthenticated
-from rest_framework import status
-
-from .serializers import ProfileSerializer
-
+from rest_framework import viewsets, mixins, generics
+from .serializers import StudentProfileSerailizers, InstructorProfileSerializers
+from .permissions import isProfileUser
 USER = get_user_model()
 # Create your views here.
 
@@ -29,8 +27,6 @@ class registerViewSet(APIView):
             return Response(user.data,status=200)
         return Response(user.errors,status=400) 
     
-    
-
     
 class LoginViewSet(APIView):
     def post(self,request):
@@ -55,31 +51,18 @@ class LoginViewSet(APIView):
 
 
 
-class ProfileView(APIView):
+class ProfileViewset(mixins.UpdateModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
     permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        serializer = ProfileSerializer(request.user)
-        return Response(serializer.data)
-
-    def put(self, request):
-        serializer = ProfileSerializer(
-            request.user,
-            data=request.data,
-            partial=False
-        )
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-
-        return Response(serializer.data)
-
-    def patch(self, request):
-        serializer = ProfileSerializer(
-            request.user,
-            data=request.data,
-            partial=True
-        )
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-
-        return Response(serializer.data)
+    
+    def get_serializer_class(self, *args, **kwargs):
+        if self.request.user.role =='student':
+            return StudentProfileSerailizers
+        return InstructorProfileSerializers
+    
+    def get_object(self):
+        user = self.request.user
+        if user.role == "student":
+            profile, _ = StudentProfile.objects.get_or_create(user=user)
+            return profile
+        profile, _ = InstructorProfile.objects.get_or_create(user=user)
+        return profile
