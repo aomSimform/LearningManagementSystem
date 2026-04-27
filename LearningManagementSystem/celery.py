@@ -18,6 +18,9 @@ app.config_from_object('django.conf:settings', namespace='CELERY')
 
 
 
+
+
+
 app.conf.beat_schedule = {
    "assignment-reminders": {
       "task":
