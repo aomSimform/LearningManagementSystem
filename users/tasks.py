@@ -1,6 +1,10 @@
 from celery import shared_task  
 from LearningManagementSystem.service.emailservice import send_email
 
+
+
+
+
 @shared_task
 def send_mail(user):
     message = f"Hello {user.get('first_name')} {user.get('last_name')} welcome to our site Thanks for registering."
