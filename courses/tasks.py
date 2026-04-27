@@ -12,29 +12,27 @@ def check_assignment_deadlines():
     now = timezone.now()
 
     # Only match assignments due 55–60 mins from now
-    lower_bound = now + timedelta(minutes=55)
+    lower_bound = now + timedelta(minutes=0)
     upper_bound = now + timedelta(minutes=60)
 
-    assignments = Assignments.objects.filter(
-        deadline__gte=lower_bound,
-        deadline__lte=upper_bound
-    )
-
+    assignments = Assignments.objects.all()
+    print(assignments)
+    print('c djvdjvjvvv ')
     for assignment in assignments:
 
         students = assignment.subsection.course.students.all()
 
         for student in students:
-
+            print("hello")
             send_email(
                 to_email=student.email,
                 subject="Assignment Reminder",
                 body=f"""
 Hello {student.first_name},
 
-Your assignment for
+Your assignment for 
 {assignment.subsection.course.title}
 
 is due in less than one hour.
-"""
+""" 
             )

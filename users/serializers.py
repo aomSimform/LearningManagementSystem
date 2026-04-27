@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User
+from .models import User, InstructorProfile, StudentProfile
 from django.core.exceptions import ValidationError
 from django.contrib.auth import authenticate, get_user_model 
 from .backends import CustomBackend
@@ -57,3 +57,16 @@ class UserLoginSerializer(serializers.Serializer):
         
         
         
+
+class StudentProfileSerailizers(serializers.ModelSerializer):
+    user = serializers.PrimaryKeyRelatedField(read_only=True, default = serializers.CurrentUserDefault())
+    class Meta:
+        model = StudentProfile
+        fields='__all__'
+        
+        
+class InstructorProfileSerializers(serializers.ModelSerializer):
+    user = serializers.PrimaryKeyRelatedField(read_only=True, default = serializers.CurrentUserDefault()) 
+    class Meta:
+        model = InstructorProfile
+        fields = '__all__'

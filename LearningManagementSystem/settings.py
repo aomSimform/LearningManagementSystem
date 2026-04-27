@@ -48,7 +48,9 @@ INSTALLED_APPS = [
     'users',
     'rest_framework_simplejwt.token_blacklist',
     'rest_framework',
-    'courses'
+    'courses',
+    'grading',
+    'submissions'
 ]
 
 MIDDLEWARE = [
@@ -147,7 +149,7 @@ REST_FRAMEWORK = {
 
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),
+    'ACCESS_TOKEN_LIFETIME': timedelta(hours=2),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
 
     'ROTATE_REFRESH_TOKENS': True,
@@ -167,3 +169,7 @@ AUTHENTICATION_BACKENDS = [
 MEDIA_ROOT = BASE_DIR / 'media'
 
 MEDIA_URL = '/media/'
+
+CELERY_BROKER_URL = "redis://default:bJ7UdZd9ypLAC7f2SPcOHX5o7hEWH2ee@redis-12846.c244.us-east-1-2.ec2.cloud.redislabs.com:12846/0"
+
+CELERY_RESULT_BACKEND = "redis://default:bJ7UdZd9ypLAC7f2SPcOHX5o7hEWH2ee@redis-12846.c244.us-east-1-2.ec2.cloud.redislabs.com:12846/0"

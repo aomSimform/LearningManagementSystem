@@ -101,7 +101,7 @@ class SubSectionViewSet(ModelViewSet):
         super().destroy(request, *args, **kwargs) 
         return Response({"success":f"object with id:- {kwargs['pk']} gets deleted successfully"})
     def perform_create(self,serializer):
-        return serializer.save(self.get_course())
+        return serializer.save(course=self.get_course())
 
     def get_course(self):
         course_id = self.kwargs["course"]
@@ -153,6 +153,7 @@ class AssignmentsCreateDeleteView(mixins.CreateModelMixin,mixins.DestroyModelMix
 
     def post(self, request, *args, **kwargs):
         print('post hit')
+        print(request.data)
         return self.create(request, *args, **kwargs)
     def delete(self, request, *args, **kwargs):
         print(self.kwargs)

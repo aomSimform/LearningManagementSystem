@@ -74,7 +74,7 @@ class InstructorProfile(models.Model):
     profile_picture = models.ImageField(upload_to = 'profile/instructors/', null=True, blank = True)
     expertise = models.CharField(max_length=200)
     experience_years = models.IntegerField(default=0)   
-    qualification = models.TextField()
+    qualification = models.TextField( null=True, blank = True)
     
     def __str__(self):
         return self.user.first_name+" "+self.user.last_name
