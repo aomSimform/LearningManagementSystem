@@ -161,6 +161,12 @@ class assignmentSerializer(serializers.ModelSerializer):
 
         return attrs
 
+    def create(self, validated_data):
+
+        validated_data.pop("uploaded_file", None)
+
+        return Assignments.objects.create(**validated_data)
+
 
 class listSubsection(serializers.ModelSerializer):
     assignments = assignmentSerializer(many=True)

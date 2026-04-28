@@ -8,6 +8,7 @@ from rest_framework.response import Response
 from rest_framework.exceptions import NotFound, PermissionDenied
 from django.db import transaction, IntegrityError
 from rest_framework.exceptions import ValidationError
+import cloudinary.uploader
 
 from .models import Courses, Subsection, Enrolled, Assignments
 from .permissions import (
@@ -255,7 +256,22 @@ class AssignmentsCreateDeleteView(
         return subsection
 
     def perform_create(self, serializer):
-        serializer.save(subsection=self.get_subsection())
+
+        uploaded_file = self.request.FILES.get("uploaded_file")
+
+        if not uploaded_file:
+            raise ValidationError("File required.")
+
+        result = cloudinary.uploader.upload(
+            uploaded_file, resource_type="raw", folder="assignments"
+        )
+
+        serializer.save(
+            subsection=self.get_subsection(),
+            assignment_url=result["secure_url"],
+            file_name=uploaded_file.name,
+            file_size=uploaded_file.size,
+        )
 
     def post(self, request, *args, **kwargs):
         return self.create(request, *args, **kwargs)
