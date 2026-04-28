@@ -19,6 +19,9 @@ class Courses(models.Model):
     created_at = models.DateTimeField(auto_now_add = True)
     seats = models.IntegerField(validators=[MinValueValidator(0),MaxValueValidator(200)])
     students = models.ManyToManyField('users.User',through = Enrolled,related_name = 'courses')
+    is_archived = models.BooleanField(
+        default=False
+    )
     def __str__(self):  
         return self.title 
     # def enroll_student(self,user_id):

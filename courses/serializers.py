@@ -4,16 +4,56 @@ from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
 
 
+
 class createCourse(serializers.ModelSerializer):
-    def create(self,validated_data):
-        validated_data['created_by']=self.context.get('request').user
-        return Courses.objects.create(**validated_data)
-    def update(self,instance,validated_data):
-        validated_data.pop('created_by',None)
-        return super().update(instance,validated_data)
+
+    def create(self, validated_data):
+        validated_data['created_by'] = (
+            self.context.get('request').user
+        )
+        return Courses.objects.create(
+            **validated_data
+        )
+
+    def update(self, instance, validated_data):
+        validated_data.pop(
+            'created_by',
+            None
+        )
+        return super().update(
+            instance,
+            validated_data
+        )
+
+    def validate_seats(self, value):
+        if value <= 0:
+            raise serializers.ValidationError(
+                "Seats must be greater than 0."
+            )
+
+
+        if self.instance:
+            enrolled_count = (
+                self.instance.students.count()
+            )
+
+            if value < enrolled_count:
+                raise serializers.ValidationError(
+                    f"Cannot reduce seats below "
+                    f"{enrolled_count} enrolled students."
+                )
+
+        return value
+
+
     class Meta:
         model = Courses
-        exclude = ['created_by','created_at','students']
+        fields = [
+            "id",
+            "title",
+            "description",
+            "seats"
+        ]
         
         
 # There are 2 methods to do it either uses hidden field which are not shown to the user or did not get data from the user

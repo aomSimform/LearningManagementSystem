@@ -36,7 +36,9 @@ class CoursesViewSet(ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        queryset = super().get_queryset()
+        queryset = super().get_queryset().filter(
+    is_archived=False
+)
 
         if self.action == "list":
             if user.role == "student":
@@ -77,10 +79,38 @@ class CoursesViewSet(ModelViewSet):
             return instructorDetailCourse
 
     def destroy(self, request, *args, **kwargs):
-        super().destroy(request, *args, **kwargs)
+        
+        #soft delete in case of enrollements or grades exists in courses
+
+        course = self.get_object()
+
+        has_students = course.students.exists()
+
+        has_subsections = (
+            course.subsections.exists()
+        )
+
+        if has_students or has_subsections:
+
+            course.is_archived = True
+            course.save()
+
+            return Response(
+                {
+                    "success":
+                    "Course archived instead of deleted."
+                },
+                status=status.HTTP_200_OK
+            )
+
+        # hard delete
+        course.delete()
 
         return Response(
-            {"success": f"Course {kwargs['pk']} deleted successfully"},
+            {
+                "success":
+                "Course deleted permanently."
+            },
             status=status.HTTP_204_NO_CONTENT
         )
 

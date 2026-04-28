@@ -9,6 +9,7 @@ class Gradings(models.Model):
     assignment = models.ForeignKey(Assignments,on_delete = models.CASCADE)
     user = models.ForeignKey(User, on_delete = models.CASCADE)
     graded_at = models.DateTimeField(auto_now_add=True)
+    grades = models.IntegerField(default = 0)
     class Meta:
         constraints = [
             models.UniqueConstraint(
