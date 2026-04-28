@@ -9,6 +9,7 @@ from rest_framework.exceptions import NotFound, PermissionDenied
 from django.db import transaction, IntegrityError
 from rest_framework.exceptions import ValidationError
 import cloudinary.uploader
+from submissions.models import Submissions
 
 from .models import Courses, Subsection, Enrolled, Assignments
 from .permissions import (
@@ -49,13 +50,16 @@ class CoursesViewSet(ModelViewSet):
     def get_queryset(self):
         user = self.request.user
         queryset = super().get_queryset().filter(is_archived=False)
-
+        if user.is_anonymous:
+            return queryset
         if self.action == "list":
             if user.role == "student":
                 return queryset.filter(students=user)
 
             if user.role == "instructor":
                 return queryset.filter(created_by=user)
+
+            return queryset.all()
 
         return queryset
 
@@ -71,7 +75,7 @@ class CoursesViewSet(ModelViewSet):
         if self.action in ["enroll", "deenroll"]:
             return [IsAuthenticated(), isStudent()]
 
-        return [IsAuthenticated()]
+        return []
 
     def get_serializer_class(self):
         if self.action in ["create", "partial_update"]:
@@ -93,13 +97,13 @@ class CoursesViewSet(ModelViewSet):
         # soft delete in case of enrollements or grades exists in courses
 
         course = self.get_object()
+        Assignment = Assignments.objects.get(pk=kwargs.get("pk"))
 
-        has_students = course.students.exists()
+        has_students = Submissions.assignment.filter(id=Assignment.id).exists()
 
         has_subsections = course.subsections.exists()
 
         if has_students or has_subsections:
-
             course.is_archived = True
             course.save()
 
@@ -120,7 +124,6 @@ class CoursesViewSet(ModelViewSet):
     def enroll(self, request, pk=None):
         try:
             with transaction.atomic():
-
                 # Lock course row until transaction finishes
                 course = Courses.objects.select_for_update().get(pk=pk)
 
@@ -225,7 +228,6 @@ class SubSectionViewSet(ModelViewSet):
 class AssignmentsCreateDeleteView(
     mixins.CreateModelMixin, mixins.DestroyModelMixin, generics.GenericAPIView
 ):
-
     queryset = Assignments.objects.filter(is_archived=False)
 
     serializer_class = assignmentSerializer
@@ -279,12 +281,15 @@ class AssignmentsCreateDeleteView(
     def delete(self, request, *args, **kwargs):
 
         assignment = self.get_object()
+        has_students = Submissions.objects.all()
 
+        print("mnfknvn", has_students)
         # if submissions exist archive delete
-        if assignment.user.exists():
-
+        if has_students.exists():
             assignment.is_archived = True
             assignment.save()
+
+            print("ass:-", assignment)
 
             return Response({"success": "Assignment archived."})
 

@@ -56,7 +56,7 @@ class ProfileViewset(mixins.UpdateModelMixin, mixins.RetrieveModelMixin, viewset
     
     def get_serializer_class(self, *args, **kwargs):
         if self.request.user.role =='student':
-            return StudentProfileSerailizers
+            return StudentProfileSerailizers 
         return InstructorProfileSerializers
     
     def get_object(self):

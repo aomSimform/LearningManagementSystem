@@ -6,10 +6,11 @@ from django.db import transaction, IntegrityError
 from courses import models
 from django.db.models import Max
 from django.utils import timezone
+from django.db.models import F
+from submissions.models import Submissions
 
 
 class createCourse(serializers.ModelSerializer):
-
     def create(self, validated_data):
         validated_data["created_by"] = self.context.get("request").user
         return Courses.objects.create(**validated_data)
@@ -27,7 +28,7 @@ class createCourse(serializers.ModelSerializer):
 
             if value < enrolled_count:
                 raise serializers.ValidationError(
-                    f"Cannot reduce seats below " f"{enrolled_count} enrolled students."
+                    f"Cannot reduce seats below {enrolled_count} enrolled students."
                 )
 
         return value
@@ -86,7 +87,6 @@ class instructorDetailCourse(serializers.ModelSerializer):
 
 
 class ListCourses(serializers.ModelSerializer):
-
     class Meta:
         model = Courses
         fields = ["title", "description"]
@@ -99,7 +99,6 @@ from .models import Assignments
 
 
 class assignmentSerializer(serializers.ModelSerializer):
-
     # incoming file from client
     uploaded_file = serializers.FileField(write_only=True)
 
@@ -177,13 +176,14 @@ class listSubsection(serializers.ModelSerializer):
 
 
 class createSubsection(serializers.ModelSerializer):
-
     # auto-generated if not sent
     order = serializers.IntegerField(required=False)
 
     course = serializers.PrimaryKeyRelatedField(read_only=True)
 
     assignments = assignmentSerializer(many=True, read_only=True)
+
+    new_order = serializers.IntegerField(write_only=True, required=False)
 
     class Meta:
         model = Subsection
@@ -233,7 +233,6 @@ class createSubsection(serializers.ModelSerializer):
 
         # only check if order supplied
         if order is not None:
-
             qs = Subsection.objects.filter(course_id=course_id, order=order)
 
             if self.instance:
@@ -249,10 +248,9 @@ class createSubsection(serializers.ModelSerializer):
     def create(self, validated_data):
 
         course = validated_data["course"]
-
+        validated_data.pop("new_order", None)
         # auto assign order
         if validated_data.get("order") is None:
-
             last_order = course.subsections.aggregate(Max("order"))["order__max"]
 
             validated_data["order"] = (last_order or 0) + 1
@@ -267,7 +265,6 @@ class createSubsection(serializers.ModelSerializer):
 
         has_assignments = instance.assignments.exists()
         if has_assignments:
-
             instance.is_archived = True
             instance.save()
 
@@ -286,17 +283,19 @@ class createSubsection(serializers.ModelSerializer):
         new_order = validated_data.get("order", old_order)
 
         if new_order != old_order:
-
             if new_order < old_order:
-
                 Subsection.objects.filter(
                     course=instance.course, order__gte=new_order, order__lt=old_order
                 ).update(order=models.F("order") + 1)
 
             else:
-
                 Subsection.objects.filter(
                     course=instance.course, order__gt=old_order, order__lte=new_order
                 ).update(order=models.F("order") - 1)
-
+        print(
+            Subsection.objects.filter(
+                course=instance.course, order__gt=old_order, order__lte=new_order
+            )
+        )
+        print("hello my name is aom ")
         return super().update(instance, validated_data)

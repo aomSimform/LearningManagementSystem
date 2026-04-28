@@ -6,12 +6,17 @@ from .backends import CustomBackend
 
 USER = get_user_model()
 
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = USER
+        fields = ["id", "first_name","last_name", "email"]
 
 class UserCreationSerializer(serializers.ModelSerializer):
     
     confirm_password = serializers.CharField(write_only=True)
     password = serializers.CharField(write_only = True)
-    
+    user = UserSerializer()
+        
     def validate_role(self,value):
         if value=='Student':
             print(value)
@@ -30,7 +35,8 @@ class UserCreationSerializer(serializers.ModelSerializer):
         return User.objects.create_user(**validated_data)
     class Meta:
         model = User 
-        fields = ['role','email','password','first_name','last_name','confirm_password']
+        depth=1
+        fields = ['role','email','password','first_name','last_name','confirm_password','user']
         
         
         
@@ -53,20 +59,25 @@ class UserLoginSerializer(serializers.Serializer):
             raise ValidationError("username or password is incorrect or user is not allowed")
         return kwargs
 
+
+
+class UserSerailizer(serializers.ModelSerializer):
+    class Meta:
+        model=USER
+        fields = '__all__'
         
         
         
         
 
 class StudentProfileSerailizers(serializers.ModelSerializer):
-    user = serializers.PrimaryKeyRelatedField(read_only=True, default = serializers.CurrentUserDefault())
+    user = UserSerializer(read_only=True)
     class Meta:
         model = StudentProfile
         fields='__all__'
         
-        
 class InstructorProfileSerializers(serializers.ModelSerializer):
-    user = serializers.PrimaryKeyRelatedField(read_only=True, default = serializers.CurrentUserDefault()) 
+    user = UserSerializer(read_only=True)
     class Meta:
         model = InstructorProfile
         fields = '__all__'

@@ -1,6 +1,6 @@
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
-
+from django.db.models import F
 # Create your models here.
 
 
@@ -47,7 +47,6 @@ from django.db import models
 
 
 class Subsection(models.Model):
-
     course = models.ForeignKey(
         "Courses", on_delete=models.CASCADE, related_name="subsections"
     )
@@ -61,7 +60,6 @@ class Subsection(models.Model):
     is_archived = models.BooleanField(default=False)
 
     class Meta:
-
         ordering = ["order"]
 
         constraints = [
@@ -80,7 +78,6 @@ class Subsection(models.Model):
 
 
 class Assignments(models.Model):
-
     subsection = models.ForeignKey(
         "Subsection", on_delete=models.CASCADE, related_name="assignments"
     )
