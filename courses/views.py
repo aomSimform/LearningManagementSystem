@@ -1,11 +1,13 @@
 from django.shortcuts import get_object_or_404
-
+from rest_framework.throttling import ScopedRateThrottle
 from rest_framework import generics, mixins, status
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.exceptions import NotFound, PermissionDenied
+from django.db import transaction, IntegrityError
+from rest_framework.exceptions import ValidationError
 
 from .models import Courses, Subsection, Enrolled, Assignments
 from .permissions import (
@@ -33,7 +35,16 @@ from .serializers import (
 class CoursesViewSet(ModelViewSet):
     queryset = Courses.objects.all()
     permission_classes = [IsAuthenticated]
+    throttle_classes = [ScopedRateThrottle]
+    def get_throttles(self):
+        if self.action == "enroll":
+            self.throttle_scope = "enroll"
 
+        elif self.action == "create":
+            self.throttle_scope = "course_create"
+
+        return super().get_throttles()
+    
     def get_queryset(self):
         user = self.request.user
         queryset = super().get_queryset().filter(
@@ -116,15 +127,60 @@ class CoursesViewSet(ModelViewSet):
 
     @action(detail=True, methods=["post"])
     def enroll(self, request, pk=None):
-        serializer = self.get_serializer(data={"course": pk})
-        serializer.is_valid(raise_exception=True)
+        try:
+            with transaction.atomic():
 
-        serializer.save(user=request.user)
+                # Lock course row until transaction finishes
+                course = Courses.objects.select_for_update().get(
+                    pk=pk
+                )
 
-        return Response(
-            {"success": "Enrolled successfully"},
-            status=status.HTTP_200_OK
-        )
+                # -------- Edge Case 1 --------
+                # Archived course
+                if course.is_archived:
+                    raise ValidationError(
+                        "Cannot enroll in archived course."
+                    )
+
+
+                # -------- Edge Case 2 --------
+                # Duplicate enrollment
+                if Enrolled.objects.filter(
+                    course=course,
+                    user=request.user
+                ).exists():
+                    raise ValidationError(
+                        "Already enrolled."
+                    )
+
+
+                # -------- Edge Case 3 --------
+                # Course full
+                if course.students.count() >= course.seats:
+                    raise ValidationError(
+                        "Course is full."
+                    )
+
+
+                # Safe insert
+                Enrolled.objects.create(
+                    course=course,
+                    user=request.user
+                )
+
+
+            return Response(
+                {
+                    "success":
+                    "Enrolled successfully"
+                },
+                status=status.HTTP_200_OK
+            )
+
+        except IntegrityError:
+            raise ValidationError(
+                "Enrollment conflict occurred."
+            )
 
     @action(detail=True, methods=["delete"])
     def deenroll(self, request, pk=None):
