@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     "courses",
     "grading",
     "submissions",
+    'corsheaders'
 ]
 
 MIDDLEWARE = [
@@ -59,6 +60,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    'corsheaders.middleware.CorsMiddleware'
 ]
 
 ROOT_URLCONF = "LearningManagementSystem.urls"
@@ -182,3 +184,7 @@ cloudinary.config(
     api_key="989957471789144",
     api_secret="_L5FZ30IOsZFKR3M0drc94M404U",
 )
+
+
+
+CORS_ALLOW_ALL_ORIGINS = True
