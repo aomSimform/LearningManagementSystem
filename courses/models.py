@@ -26,14 +26,56 @@ class Courses(models.Model):
         return self.title 
     # def enroll_student(self,user_id):
     #     Enrolled.objects.create(user = user_id, course = self)
+from django.db import models
+
+
 class Subsection(models.Model):
-    course = models.ForeignKey('Courses',on_delete=models.CASCADE,related_name='subsections')
-    topic = models.CharField(max_length=300)
+
+    course = models.ForeignKey(
+        'Courses',
+        on_delete=models.CASCADE,
+        related_name='subsections'
+    )
+
+    topic = models.CharField(
+        max_length=300
+    )
+
     description = models.TextField()
-    
+
+    order = models.PositiveIntegerField()
+
+    is_archived = models.BooleanField(
+        default=False
+    )
+
+    class Meta:
+
+        ordering = ["order"]
+
+        constraints = [
+
+            
+            models.UniqueConstraint(
+                fields=["course", "topic"],
+                name="unique_topic_per_course"
+            ),
+
+            
+            models.UniqueConstraint(
+                fields=["course", "order"],
+                name="unique_order_per_course"
+            ),
+        ]
+
+
     def __str__(self):
         return self.topic
-    
+
+
+
+
+
 class Assignments(models.Model):
     subsection = models.ForeignKey('Subsection',on_delete = models.CASCADE,related_name = 'assignments')
     file = models.FileField(upload_to = 'assignments/')
