@@ -15,7 +15,7 @@ from .permissions import (
     isStudent,
     isCourseOwner,
     isSubsectionCreatedByInstarctor,
-    isAssignmentCretedByInstarctor
+    isAssignmentCretedByInstarctor,
 )
 from .serializers import (
     createCourse,
@@ -24,18 +24,18 @@ from .serializers import (
     studentDetailCourse,
     instructorDetailCourse,
     createSubsection,
-    assignmentSerializer
+    assignmentSerializer,
 )
 
 
-# -------------------------
 # Courses
-# -------------------------
+
 
 class CoursesViewSet(ModelViewSet):
     queryset = Courses.objects.all()
     permission_classes = [IsAuthenticated]
     throttle_classes = [ScopedRateThrottle]
+
     def get_throttles(self):
         if self.action == "enroll":
             self.throttle_scope = "enroll"
@@ -44,12 +44,10 @@ class CoursesViewSet(ModelViewSet):
             self.throttle_scope = "course_create"
 
         return super().get_throttles()
-    
+
     def get_queryset(self):
         user = self.request.user
-        queryset = super().get_queryset().filter(
-    is_archived=False
-)
+        queryset = super().get_queryset().filter(is_archived=False)
 
         if self.action == "list":
             if user.role == "student":
@@ -90,16 +88,14 @@ class CoursesViewSet(ModelViewSet):
             return instructorDetailCourse
 
     def destroy(self, request, *args, **kwargs):
-        
-        #soft delete in case of enrollements or grades exists in courses
+
+        # soft delete in case of enrollements or grades exists in courses
 
         course = self.get_object()
 
         has_students = course.students.exists()
 
-        has_subsections = (
-            course.subsections.exists()
-        )
+        has_subsections = course.subsections.exists()
 
         if has_students or has_subsections:
 
@@ -107,22 +103,16 @@ class CoursesViewSet(ModelViewSet):
             course.save()
 
             return Response(
-                {
-                    "success":
-                    "Course archived instead of deleted."
-                },
-                status=status.HTTP_200_OK
+                {"success": "Course archived instead of deleted."},
+                status=status.HTTP_200_OK,
             )
 
         # hard delete
         course.delete()
 
         return Response(
-            {
-                "success":
-                "Course deleted permanently."
-            },
-            status=status.HTTP_204_NO_CONTENT
+            {"success": "Course deleted permanently."},
+            status=status.HTTP_204_NO_CONTENT,
         )
 
     @action(detail=True, methods=["post"])
@@ -131,81 +121,52 @@ class CoursesViewSet(ModelViewSet):
             with transaction.atomic():
 
                 # Lock course row until transaction finishes
-                course = Courses.objects.select_for_update().get(
-                    pk=pk
-                )
+                course = Courses.objects.select_for_update().get(pk=pk)
 
                 # -------- Edge Case 1 --------
                 # Archived course
                 if course.is_archived:
-                    raise ValidationError(
-                        "Cannot enroll in archived course."
-                    )
-
+                    raise ValidationError("Cannot enroll in archived course.")
 
                 # -------- Edge Case 2 --------
                 # Duplicate enrollment
-                if Enrolled.objects.filter(
-                    course=course,
-                    user=request.user
-                ).exists():
-                    raise ValidationError(
-                        "Already enrolled."
-                    )
-
+                if Enrolled.objects.filter(course=course, user=request.user).exists():
+                    raise ValidationError("Already enrolled.")
 
                 # -------- Edge Case 3 --------
                 # Course full
                 if course.students.count() >= course.seats:
-                    raise ValidationError(
-                        "Course is full."
-                    )
-
+                    raise ValidationError("Course is full.")
 
                 # Safe insert
-                Enrolled.objects.create(
-                    course=course,
-                    user=request.user
-                )
-
+                Enrolled.objects.create(course=course, user=request.user)
 
             return Response(
-                {
-                    "success":
-                    "Enrolled successfully"
-                },
-                status=status.HTTP_200_OK
+                {"success": "Enrolled successfully"}, status=status.HTTP_200_OK
             )
 
         except IntegrityError:
-            raise ValidationError(
-                "Enrollment conflict occurred."
-            )
+            raise ValidationError("Enrollment conflict occurred.")
 
     @action(detail=True, methods=["delete"])
     def deenroll(self, request, pk=None):
-        enrolled = Enrolled.objects.filter(
-            course=pk,
-            user=request.user
-        )
+        enrolled = Enrolled.objects.filter(course=pk, user=request.user)
 
         if not enrolled.exists():
             return Response(
                 {"error": "You are not enrolled in this course"},
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         enrolled.delete()
 
         return Response(
-            {"success": "De-enrolled successfully"},
-            status=status.HTTP_200_OK
+            {"success": "De-enrolled successfully"}, status=status.HTTP_200_OK
         )
 
 
-# -------------------------
 # Subsections
-# -------------------------
+
 
 class SubSectionViewSet(ModelViewSet):
     queryset = Subsection.objects.prefetch_related("assignments")
@@ -218,16 +179,14 @@ class SubSectionViewSet(ModelViewSet):
         if self.action == "list":
             return self.queryset.filter(course=course)
 
-        return self.queryset.filter(
-            course=self.kwargs["course"]
-        )
+        return self.queryset.filter(course=self.kwargs["course"])
 
     def get_permissions(self):
         if self.action in ["create", "partial_update", "destroy"]:
             return [
                 IsAuthenticated(),
                 isInstructor(),
-                isSubsectionCreatedByInstarctor()
+                isSubsectionCreatedByInstarctor(),
             ]
 
         return [IsAuthenticated()]
@@ -243,82 +202,77 @@ class SubSectionViewSet(ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         super().destroy(request, *args, **kwargs)
 
-        return Response({
-            "success": f"Subsection {kwargs['pk']} deleted successfully"
-        })
+        return Response({"success": f"Subsection {kwargs['pk']} deleted successfully"})
 
     def get_course(self):
-        course = get_object_or_404(
-            Courses,
-            pk=self.kwargs["course"]
-        )
+        course = get_object_or_404(Courses, pk=self.kwargs["course"])
 
         if self.request.user.role == "student":
-            if not course.students.filter(
-                pk=self.request.user.pk
-            ).exists():
-                raise PermissionDenied(
-                    "You are not enrolled in this course."
-                )
+            if not course.students.filter(pk=self.request.user.pk).exists():
+                raise PermissionDenied("You are not enrolled in this course.")
 
         else:
             if course.created_by != self.request.user:
-                raise PermissionDenied(
-                    "You do not have permission for this course."
-                )
+                raise PermissionDenied("You do not have permission for this course.")
 
         return course
 
 
-# -------------------------
 # Assignments
-# -------------------------
+
 
 class AssignmentsCreateDeleteView(
-    mixins.CreateModelMixin,
-    mixins.DestroyModelMixin,
-    generics.GenericAPIView
+    mixins.CreateModelMixin, mixins.DestroyModelMixin, generics.GenericAPIView
 ):
-    queryset = Assignments.objects.all()
+
+    queryset = Assignments.objects.filter(is_archived=False)
+
     serializer_class = assignmentSerializer
 
-    permission_classes = [
-        isInstructor,
-        isAssignmentCretedByInstarctor
-    ]
+    permission_classes = [isInstructor, isAssignmentCretedByInstarctor]
+
+    def get_serializer_context(self):
+
+        context = super().get_serializer_context()
+
+        context["kwargs"] = self.kwargs
+
+        return context
 
     def get_subsection(self):
-        subsection = get_object_or_404(
-            Subsection,
-            pk=self.kwargs["subsection"]
-        )
+
+        subsection = get_object_or_404(Subsection, pk=self.kwargs["subsection"])
+
+        if subsection.course_id != int(self.kwargs["course"]):
+            raise PermissionDenied("Subsection does not belong to course.")
 
         if subsection.course.created_by != self.request.user:
-            raise PermissionDenied(
-                "You do not have permission for this course"
-            )
+            raise PermissionDenied("No permission.")
+
+        if subsection.is_archived:
+            raise PermissionDenied("Subsection archived.")
 
         return subsection
 
     def perform_create(self, serializer):
-        serializer.save(
-            subsection=self.get_subsection()
-        )
+        serializer.save(subsection=self.get_subsection())
 
     def post(self, request, *args, **kwargs):
-        return self.create(
-            request,
-            *args,
-            **kwargs
-        )
+        return self.create(request, *args, **kwargs)
 
     def delete(self, request, *args, **kwargs):
-        self.destroy(
-            request,
-            *args,
-            **kwargs
-        )
 
-        return Response({
-            "success": f"Assignment {kwargs['pk']} deleted successfully"
-        })
+        assignment = self.get_object()
+
+        # if submissions exist archive delete
+        if assignment.user.exists():
+
+            assignment.is_archived = True
+            assignment.save()
+
+            return Response({"success": "Assignment archived."})
+
+        # hard delete
+        assignment.delete()
+
+        return Response({"success": "Assignment deleted."})

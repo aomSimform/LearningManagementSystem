@@ -5,6 +5,7 @@ from django.shortcuts import get_object_or_404
 from django.db import transaction, IntegrityError
 from courses import models
 from django.db.models import Max
+from django.utils import timezone
 
 
 class createCourse(serializers.ModelSerializer):
@@ -91,11 +92,74 @@ class ListCourses(serializers.ModelSerializer):
         fields = ["title", "description"]
 
 
+from rest_framework import serializers
+from django.utils import timezone
+
+from .models import Assignments
+
+
 class assignmentSerializer(serializers.ModelSerializer):
+
+    # incoming file from client
+    uploaded_file = serializers.FileField(write_only=True)
+
     class Meta:
-        fields = "__all__"
         model = Assignments
-        read_only_fields = ["subsection"]
+
+        fields = [
+            "id",
+            "title",
+            "uploaded_file",
+            "assignment_url",
+            "file_name",
+            "file_size",
+            "deadline",
+            "subsection",
+            "is_archived",
+        ]
+
+        read_only_fields = [
+            "subsection",
+            "assignment_url",
+            "file_name",
+            "file_size",
+            "is_archived",
+        ]
+
+    def validate_uploaded_file(self, value):
+
+        # max 2MB
+        if value.size > (2 * 1024 * 1024):
+            raise serializers.ValidationError("File must be under 2 MB.")
+
+        return value
+
+    def validate_deadline(self, value):
+
+        if value <= timezone.now():
+            raise serializers.ValidationError("Deadline cannot be past.")
+
+        return value
+
+    def validate(self, attrs):
+
+        subsection_id = self.context["kwargs"]["subsection"]
+
+        title = attrs.get("title")
+
+        qs = Assignments.objects.filter(
+            subsection_id=subsection_id, title__iexact=title, is_archived=False
+        )
+
+        if self.instance:
+            qs = qs.exclude(pk=self.instance.pk)
+
+        if qs.exists():
+            raise serializers.ValidationError(
+                {"title": "Assignment title already exists."}
+            )
+
+        return attrs
 
 
 class listSubsection(serializers.ModelSerializer):
