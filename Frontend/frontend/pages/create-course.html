@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+
+    <title>Create Course</title>
+
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+  </head>
+
+  <body class="bg-light">
+    <nav class="navbar navbar-dark bg-dark">
+      <div class="container-fluid">
+        <a href="../index.html" class="navbar-brand"> ← Back to Dashboard </a>
+      </div>
+    </nav>
+
+    <div class="container mt-5">
+      <div class="row justify-content-center">
+        <div class="col-md-6">
+          <div class="card shadow p-4">
+            <h3 class="mb-4">Create Course</h3>
+
+            <div id="errorBox" class="alert alert-danger d-none"></div>
+
+            <div id="successBox" class="alert alert-success d-none"></div>
+
+            <form id="courseForm">
+              <div class="mb-3">
+                <label class="form-label"> Course Title </label>
+
+                <input type="text" id="title" class="form-control" required />
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label"> Description </label>
+
+                <textarea
+                  id="description"
+                  class="form-control"
+                  rows="5"
+                  required
+                ></textarea>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label"> Seats </label>
+
+                <input
+                  type="number"
+                  id="seats"
+                  class="form-control"
+                  min="1"
+                  step="1"
+                  required
+                />
+                <small class="text-muted"> Enter available seats </small>
+              </div>
+
+              <button
+                type="submit"
+                id="createBtn"
+                class="btn btn-success w-100"
+              >
+                Create Course
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script type="module">
+      const token = localStorage.getItem("access");
+
+      const errorBox = document.getElementById("errorBox");
+
+      const successBox = document.getElementById("successBox");
+
+      if (!token) {
+        errorBox.textContent = "Login required";
+
+        errorBox.classList.remove("d-none");
+
+        throw new Error("No token");
+      }
+
+      document
+        .getElementById("courseForm")
+        .addEventListener("submit", async function (e) {
+          e.preventDefault();
+
+          errorBox.classList.add("d-none");
+
+          successBox.classList.add("d-none");
+
+          const btn = document.getElementById("createBtn");
+
+          const seatsValue = parseInt(
+            document.getElementById("seats").value,
+            10,
+          );
+
+          if (!Number.isInteger(seatsValue) || seatsValue < 1) {
+            errorBox.textContent = "Seats must be at least 1";
+
+            errorBox.classList.remove("d-none");
+
+            return;
+          }
+
+          btn.disabled = true;
+
+          btn.innerText = "Creating...";
+
+          try {
+            const payload = {
+              title: document.getElementById("title").value,
+
+              description: document.getElementById("description").value,
+
+              seats: seatsValue,
+            };
+
+            const response = await fetch("http://127.0.0.1:8000/courses/", {
+              method: "POST",
+
+              headers: {
+                "Content-Type": "application/json",
+
+                Authorization: `Bearer ${token}`,
+              },
+
+              body: JSON.stringify(payload),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+              throw data;
+            }
+
+            successBox.textContent = "Course created successfully";
+
+            successBox.classList.remove("d-none");
+
+            setTimeout(() => {
+              if (data.id) {
+                window.location.href = `course.html?id=${data.id}`;
+              } else {
+                window.location.href = "../index.html";
+              }
+            }, 1500);
+          } catch (error) {
+            errorBox.textContent =
+              error.detail || JSON.stringify(error) || "Course creation failed";
+
+            errorBox.classList.remove("d-none");
+          } finally {
+            btn.disabled = false;
+
+            btn.innerText = "Create Course";
+          }
+        });
+    </script>
+  </body>
+</html>
