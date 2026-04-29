@@ -19,6 +19,7 @@ from django.urls import path, include
 from users import urls as users_url
 from courses import urls as courses_url
 from submissions import urls as submission_url
+from grading import urls as grading_url
 
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
@@ -30,5 +31,6 @@ urlpatterns = [
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('user/',include(users_url)),
     path('courses/',include(courses_url)),
-    path('courses/<int:course>/subsection/<int:subsection>/submissions/',include(submission_url))
+    path('courses/<int:course>/subsection/<int:subsection>/submissions/',include(submission_url)),
+    path('courses/<int:course>/subsection/<int:subsection>/grades/',include(grading_url))
 ]
