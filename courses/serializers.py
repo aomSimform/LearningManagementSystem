@@ -35,7 +35,7 @@ class createCourse(serializers.ModelSerializer):
 
     class Meta:
         model = Courses
-        fields = ["id", "title", "description", "seats"]
+        fields = ["id", "title", "description", "seats","enroll"]
 
 
 # There are 2 methods to do it either uses hidden field which are not shown to the user or did not get data from the user
@@ -87,9 +87,15 @@ class instructorDetailCourse(serializers.ModelSerializer):
 
 
 class ListCourses(serializers.ModelSerializer):
+    enroll = serializers.SerializerMethodField()
+    
+    def get_enroll(self,obj):
+        user = self.context.get('request').user
+        enroll = obj.students.filter(id=user.id).exists()
+        return enroll
     class Meta:
         model = Courses
-        fields = ["title", "description","id"]
+        fields = ["title", "description","id","enroll"]
 
 
 from rest_framework import serializers

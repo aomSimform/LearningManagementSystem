@@ -20,7 +20,7 @@ class registerViewSet(APIView):
         if user.is_valid():
             user.save()
             print(user.data)
-            print('hekfomevk')
+            print('hekfomevk jnjun')
             transaction.on_commit(lambda:send_mail.delay(user.data))
             transaction.on_commit(lambda:send_admin_mail.delay(user.data))
             print(request.data)

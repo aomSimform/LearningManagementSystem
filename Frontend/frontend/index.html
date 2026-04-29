@@ -1,202 +1,120 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<head>
+    <meta charset="utf-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <title>Dashboard</title>
 
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-  </head>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" />
+</head>
 
-  <body class="bg-light">
-    <!-- Navbar -->
+<body class="bg-light">
+
+
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-      <div class="container-fluid">
-        <a class="navbar-brand" href="#"> LMS Dashboard </a>
 
-        <div class="ms-auto">
-          <button
-            id="login-btn"
-            class="btn btn-primary me-2 not-loggedin"
-            style="display: none"
-            onclick="window.location.href = 'pages/login.html'"
-          >
-            Login
-          </button>
+        <div class="container-fluid">
 
-          <button
-            id="register-btn"
-            class="btn btn-success not-loggedin"
-            style="display: none"
-            onclick="window.location.href = 'pages/register.html'"
-          >
-            Register
-          </button>
+            <a class="navbar-brand" href="#">
+LMS Dashboard
+</a>
+
+
+            <div class="ms-auto">
+
+                <button id="login-btn" class="
+btn btn-primary
+me-2
+not-loggedin
+" style="display:none">
+Login
+</button>
+
+
+                <button id="register-btn" class="
+btn btn-success
+me-2
+not-loggedin
+" style="display:none">
+Register
+</button>
+
+
+                <button id="logout-btn" class="btn btn-danger" style="display:none">
+Logout
+</button>
+
+            </div>
+
         </div>
-      </div>
+
     </nav>
 
+
+
+
     <div class="container mt-4">
-      <!-- Greeting -->
-      <div id="loggedin" style="display: none" class="mb-4">
-        <div class="alert alert-info">
-          <h4 id="username">Hello:</h4>
-        </div>
-      </div>
 
-      <!-- Instructor Only -->
-      <div id="create-course-box" style="display: none" class="mb-3">
-        <button
-          class="btn btn-success"
-          onclick="window.location.href = 'pages/create-course.html'"
-        >
-          Create Course
-        </button>
-      </div>
+        <div id="loggedin" style="display:none" class="mb-4">
 
-      <!-- Course Error -->
-      <div id="courseError" class="alert alert-danger d-none mb-3"></div>
+            <div class="alert alert-info">
 
-      <!-- Courses -->
-      <div class="card shadow-sm">
-        <div class="card-header">
-          <h4>Available Courses</h4>
+                <h4 id="username">
+                    Hello:
+                </h4>
+
+            </div>
+
         </div>
 
-        <div class="card-body">
-          <div id="course-list">Loading courses...</div>
+
+
+        <div id="create-course-box" style="display:none" class="mb-3">
+
+            <button class="btn btn-success" id="create-course-btn">
+Create Course
+</button>
+
         </div>
-      </div>
+
+
+
+        <div id="courseError" class="
+alert alert-danger
+d-none
+mb-3
+"></div>
+
+
+
+
+        <div class="card shadow-sm">
+
+            <div class="card-header">
+                <h4>
+                    Available Courses
+                </h4>
+            </div>
+
+            <div class="card-body">
+                <div id="course-list">
+                    Loading courses...
+                </div>
+            </div>
+
+        </div>
+
     </div>
+
+
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 
-    <script type="module">
-      import * as auth from "./js/auth/authCheck.js";
+    <script type="module" src="./js/dashboard.js"></script>
 
-      const user = await auth.default();
+</body>
 
-      /*
-Show login/register
-*/
-      if (!user) {
-        const buttons = document.getElementsByClassName("not-loggedin");
-
-        for (const item of buttons) {
-          item.style.display = "inline-block";
-        }
-      }
-
-      /*
-Logged in user
-*/
-      if (user && user.profile && user.profile.user) {
-        document.getElementById("username").textContent +=
-          user.profile.user.first_name + " " + user.profile.user.last_name;
-
-        document.getElementById("loggedin").style.display = "block";
-
-        if (user.role === "instructor") {
-          document.getElementById("create-course-box").style.display = "block";
-        }
-      }
-
-      const access = localStorage.getItem("access");
-
-      /*
-Course click handler
-*/
-      window.openCourse = async function (courseId) {
-        const errorBox = document.getElementById("courseError");
-
-        errorBox.classList.add("d-none");
-
-        try {
-          const response = await fetch(
-            `http://127.0.0.1:8000/courses/${courseId}/`,
-            {
-              method: "GET",
-
-              headers: {
-                Authorization: access ? `Bearer ${access}` : "",
-              },
-            },
-          );
-
-          const data = await response.json();
-
-          if (!response.ok) {
-            throw data;
-          }
-
-          /*
-   valid course
-   redirect
-   */
-          window.location.href = `pages/course.html?id=${courseId}`;
-        } catch (error) {
-          errorBox.textContent =
-            error.detail || error.message || "Could not open course";
-
-          errorBox.classList.remove("d-none");
-        }
-      };
-
-      /*
-Load courses
-*/
-      try {
-        const response = await fetch("http://127.0.0.1:8000/courses/");
-
-        if (!response.ok) {
-          throw new Error("Could not load courses");
-        }
-
-        const courses = await response.json();
-
-        let list = `<div class="list-group">`;
-
-        for (const course of courses) {
-          list += `
-   <button
-    class="
-     list-group-item
-     list-group-item-action
-     mb-3
-    "
-
-    onclick="
-      openCourse(
-        ${course.id}
-      )
-    "
-   >
-
-    <h5>
-      ${course.title}
-    </h5>
-
-    <p class="mb-1">
-      ${course.description}
-    </p>
-
-   </button>
-  `;
-        }
-
-        list += `</div>`;
-
-        document.getElementById("course-list").innerHTML = list;
-      } catch (error) {
-        console.error(error);
-
-        document.getElementById("course-list").innerHTML =
-          "Failed to load courses.";
-      }
-    </script>
-  </body>
 </html>
