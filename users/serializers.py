@@ -15,7 +15,6 @@ class UserCreationSerializer(serializers.ModelSerializer):
     
     confirm_password = serializers.CharField(write_only=True)
     password = serializers.CharField(write_only = True)
-    user = UserSerializer()
         
     def validate_role(self,value):
         if value=='Student':
@@ -36,7 +35,7 @@ class UserCreationSerializer(serializers.ModelSerializer):
     class Meta:
         model = User 
         depth=1
-        fields = ['role','email','password','first_name','last_name','confirm_password','user']
+        fields = ['role','email','password','first_name','last_name','confirm_password']
         
         
         
