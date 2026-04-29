@@ -30,5 +30,5 @@ urlpatterns = [
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('user/',include(users_url)),
     path('courses/',include(courses_url)),
-    path('courses/<int:course>/subsection/<int:subsection>/submissions',include(submission_url))
+    path('courses/<int:course>/subsection/<int:subsection>/submissions/',include(submission_url))
 ]
