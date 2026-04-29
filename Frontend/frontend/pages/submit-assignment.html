@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+
+    <title>Submit Assignment</title>
+
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+  </head>
+
+  <body class="bg-light">
+    <nav class="navbar navbar-dark bg-dark">
+      <div class="container-fluid">
+        <a href="javascript:history.back()" class="navbar-brand"> ← Back </a>
+      </div>
+    </nav>
+
+    <div class="container mt-5">
+      <div class="row justify-content-center">
+        <div class="col-md-6">
+          <div class="card shadow p-4">
+            <h3 class="mb-4">Submit Assignment</h3>
+
+            <div id="errorBox" class="alert alert-danger d-none"></div>
+
+            <div id="successBox" class="alert alert-success d-none"></div>
+
+            <div class="alert alert-info" id="infoBox">
+              Loading assignment info...
+            </div>
+
+            <form id="submissionForm">
+              <div class="mb-3">
+                <label class="form-label"> Upload File </label>
+
+                <input
+                  type="file"
+                  id="submissionFile"
+                  class="form-control"
+                  required
+                />
+              </div>
+
+              <button
+                type="submit"
+                id="submitBtn"
+                class="btn btn-success w-100"
+              >
+                Submit Assignment
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script type="module">
+      const params = new URLSearchParams(window.location.search);
+
+      const courseId = params.get("course_id");
+
+      const subsectionId = params.get("subsection_id");
+
+      const assignmentId = params.get("assignment_id");
+
+      const token = localStorage.getItem("access");
+
+      const errorBox = document.getElementById("errorBox");
+
+      const successBox = document.getElementById("successBox");
+
+      const infoBox = document.getElementById("infoBox");
+
+      if (!courseId || !subsectionId || !assignmentId) {
+        errorBox.textContent = "Missing query parameters";
+
+        errorBox.classList.remove("d-none");
+
+        throw new Error("Missing parameters");
+      }
+
+      /*
+Dynamic URL from query params
+*/
+      const submissionUrl = `http://127.0.0.1:8000/courses/${courseId}/subsection/${subsectionId}/submissions/`;
+
+      infoBox.innerHTML = `
+<strong>
+Course:
+</strong>
+${courseId}
+
+<br>
+
+<strong>
+Subsection:
+</strong>
+${subsectionId}
+
+<br>
+
+<strong>
+Assignment:
+</strong>
+${assignmentId}
+`;
+
+      document
+        .getElementById("submissionForm")
+        .addEventListener("submit", async function (e) {
+          e.preventDefault();
+
+          errorBox.classList.add("d-none");
+
+          successBox.classList.add("d-none");
+
+          const btn = document.getElementById("submitBtn");
+
+          const fileInput = document.getElementById("submissionFile");
+
+          if (!fileInput.files.length) {
+            errorBox.textContent = "Please select a file";
+
+            errorBox.classList.remove("d-none");
+
+            return;
+          }
+
+          btn.disabled = true;
+
+          btn.innerText = "Uploading...";
+
+          try {
+            const formData = new FormData();
+
+            /*
+Adjust field name if needed
+*/
+            formData.append("file", fileInput.files[0]);
+
+            /*
+Assignment id from query param
+*/
+            formData.append("assignment", assignmentId);
+
+            const response = await fetch(submissionUrl, {
+              method: "POST",
+
+              headers: {
+                Authorization: token ? `Bearer ${token}` : "",
+              },
+
+              body: formData,
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+              throw data;
+            }
+
+            successBox.textContent = "Assignment submitted successfully";
+
+            successBox.classList.remove("d-none");
+
+            document.getElementById("submissionForm").reset();
+          } catch (error) {
+            errorBox.textContent =
+              error.detail || JSON.stringify(error) || "Submission failed";
+
+            errorBox.classList.remove("d-none");
+          } finally {
+            btn.disabled = false;
+
+            btn.innerText = "Submit Assignment";
+          }
+        });
+    </script>
+  </body>
+</html>

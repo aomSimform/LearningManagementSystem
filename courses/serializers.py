@@ -89,7 +89,7 @@ class instructorDetailCourse(serializers.ModelSerializer):
 class ListCourses(serializers.ModelSerializer):
     class Meta:
         model = Courses
-        fields = ["title", "description"]
+        fields = ["title", "description","id"]
 
 
 from rest_framework import serializers
