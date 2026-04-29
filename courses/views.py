@@ -35,7 +35,7 @@ from .serializers import (
 
 class CoursesViewSet(ModelViewSet):
     queryset = Courses.objects.all()
-    permission_classes = [IsAuthenticated]
+    permission_classes = []
     throttle_classes = [ScopedRateThrottle]
 
     def get_throttles(self):
@@ -52,6 +52,8 @@ class CoursesViewSet(ModelViewSet):
         queryset = super().get_queryset().filter(is_archived=False)
         if user.is_anonymous:
             return queryset
+        print(user.is_anonymous)
+        return queryset
         if self.action == "list":
             if user.role == "student":
                 return queryset.filter(students=user)
@@ -297,3 +299,9 @@ class AssignmentsCreateDeleteView(
         assignment.delete()
 
         return Response({"success": "Assignment deleted."})
+
+
+
+
+
+
