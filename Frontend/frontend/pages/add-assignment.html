@@ -3,9 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-
     <meta name="viewport" content="width=device-width, initial-scale=1">
-
     <title>Add Assignment</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -13,110 +11,57 @@
 
 <body class="bg-light">
 
+    <!-- Navbar -->
     <nav class="navbar navbar-dark bg-dark">
         <div class="container-fluid">
-            <a href="javascript:history.back()" class="navbar-brand">
-← Back
-</a>
+            <a href="javascript:history.back()" class="navbar-brand">← Back</a>
         </div>
     </nav>
 
-
-
+    <!-- Main -->
     <div class="container mt-5">
-
         <div class="row justify-content-center">
-
             <div class="col-md-6">
-
                 <div class="card shadow p-4">
 
-                    <h3 class="mb-4">
-                        Add Assignment
-                    </h3>
+                    <h3 class="mb-4">Add Assignment</h3>
 
+                    <!-- Alerts -->
+                    <div id="errorBox" class="alert alert-danger d-none"></div>
+                    <div id="successBox" class="alert alert-success d-none"></div>
+                    <div id="infoBox" class="alert alert-info">Loading...</div>
 
-                    <div id="errorBox" class="
-alert alert-danger
-d-none
-"></div>
-
-
-                    <div id="successBox" class="
-alert alert-success
-d-none
-"></div>
-
-
-                    <div id="infoBox" class="
-alert alert-info
-">
-                        Loading...
-                    </div>
-
-
-
+                    <!-- Form -->
                     <form id="assignmentForm">
 
                         <div class="mb-3">
-
-                            <label class="form-label">
-Title
-</label>
-
+                            <label class="form-label">Title</label>
                             <input type="text" id="title" class="form-control" required>
-
                         </div>
 
-
-
                         <div class="mb-3">
-
-                            <label class="form-label">
-Upload File
-</label>
-
+                            <label class="form-label">Upload File</label>
                             <input type="file" id="assignmentFile" class="form-control" accept=".pdf,.jpg,.jpeg,.png" required>
-
-                            <small class="text-muted">
-Allowed:
-PDF, JPG, PNG
-</small>
-
+                            <small class="text-muted">Allowed: PDF, JPG, PNG</small>
                         </div>
-
-
 
                         <div class="mb-3">
-
-                            <label class="form-label">
-Deadline
-</label>
-
+                            <label class="form-label">Deadline</label>
                             <input type="datetime-local" id="deadline" class="form-control" required>
-
                         </div>
 
-
-                        <button type="submit" id="createBtn" class="
-btn btn-success
-w-100
-">
-Create Assignment
-</button>
+                        <button type="submit" id="createBtn" class="btn btn-success w-100">
+                            Create Assignment
+                        </button>
 
                     </form>
 
                 </div>
-
             </div>
-
         </div>
-
     </div>
 
-
-
+    <!-- JS -->
     <script type="module" src="add-assignment.js"></script>
 
 </body>
