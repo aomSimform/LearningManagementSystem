@@ -1,96 +1,77 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Course Details</title>
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+  </head>
 
-<body class="bg-light">
-
+  <body class="bg-light">
     <nav class="navbar navbar-dark bg-dark">
-        <div class="container-fluid">
-            <a href="../index.html" class="navbar-brand">
-← Back to Dashboard
-</a>
-        </div>
+      <div class="container-fluid">
+        <a href="../index.html" class="navbar-brand"> ← Back to Dashboard </a>
+      </div>
     </nav>
 
-
     <div class="container mt-4">
+      <div id="errorBox" class="alert alert-danger d-none"></div>
 
-        <div id="errorBox" class="
-alert alert-danger
-d-none
-"></div>
+      <div id="course-details" class="card shadow-sm mb-4">
+        <div class="card-body">Loading course...</div>
+      </div>
 
+      <!-- TOTAL GRADE -->
+      <div id="total-grade-box" class="alert alert-info d-none"></div>
 
+      <!-- Instructor only -->
+      <div id="create-subsection-box" style="display: none" class="mb-3">
+        <div class="card shadow-sm p-3">
+          <h5>Create Subsection</h5>
 
-        <div id="course-details" class="
-card shadow-sm
-mb-4
-">
-            <div class="card-body">
-                Loading course...
-            </div>
+          <form id="subsectionForm">
+            <input
+              id="topic"
+              class="form-control mb-2"
+              placeholder="Topic"
+              required
+            />
+            <textarea
+              id="subsection_description"
+              class="form-control mb-2"
+              placeholder="Description"
+              required
+            ></textarea>
+            <input
+              id="order"
+              type="number"
+              class="form-control mb-2"
+              placeholder="Order"
+              required
+            />
+
+            <button id="createSubBtn" class="btn btn-success" type="submit">
+              Create Subsection
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <div class="card shadow-sm">
+        <div class="card-header">
+          <h4>Subsections</h4>
         </div>
 
-
-
-        <!-- Instructor only -->
-        <div id="create-subsection-box" style="display:none" class="mb-3">
-            <div class="card shadow-sm p-3">
-
-                <h5>
-                    Create Subsection
-                </h5>
-
-                <form id="subsectionForm">
-
-                    <input id="topic" class="form-control mb-2" placeholder="Topic" required>
-
-                    <textarea id="subsection_description" class="form-control mb-2" placeholder="Description" required></textarea>
-
-                    <input id="order" type="number" class="form-control mb-2" placeholder="Order" required>
-
-                    <button id="createSubBtn" class="btn btn-success" type="submit">
-Create Subsection
-</button>
-
-                </form>
-
-            </div>
+        <div class="card-body">
+          <div id="subsection-list">Loading...</div>
         </div>
-
-
-
-
-        <div class="card shadow-sm">
-
-            <div class="card-header">
-                <h4>
-                    Subsections
-                </h4>
-            </div>
-
-            <div class="card-body">
-                <div id="subsection-list">
-                    Loading subsections...
-                </div>
-            </div>
-
-        </div>
-
-
+      </div>
     </div>
 
-
     <script type="module" src="course.js"></script>
-
-</body>
-
+  </body>
 </html>
