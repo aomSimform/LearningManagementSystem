@@ -29,7 +29,6 @@ from .serializers import (
     assignmentSerializer,
 )
 
-
 # Courses
 
 
@@ -53,10 +52,9 @@ class CoursesViewSet(ModelViewSet):
         if user.is_anonymous:
             return queryset
         print(user.is_anonymous)
-        return queryset
         if self.action == "list":
-            if user.role == "student":
-                return queryset.filter(students=user)
+            # if user.role == "student":
+            #     return queryset.filter(students=user)
 
             if user.role == "instructor":
                 return queryset.filter(created_by=user)
@@ -299,9 +297,3 @@ class AssignmentsCreateDeleteView(
         assignment.delete()
 
         return Response({"success": "Assignment deleted."})
-
-
-
-
-
-
