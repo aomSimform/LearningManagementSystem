@@ -2,7 +2,7 @@ from django.contrib import admin
 from .models import User, StudentProfile, InstructorProfile
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from .tasks import send_instructor_approved_email
-# Register your models here.
+
 
 
 admin.site.register(StudentProfile)
