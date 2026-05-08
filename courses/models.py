@@ -1,7 +1,7 @@
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db.models import F
-# Create your models here.
+
 
 
 class Enrolled(models.Model):
@@ -63,11 +63,9 @@ class Subsection(models.Model):
         ordering = ["order"]
 
         constraints = [
-            # Prevent duplicate topics in same course
             models.UniqueConstraint(
                 fields=["course", "topic"], name="unique_topic_per_course"
             ),
-            # Prevent duplicate order numbers
             models.UniqueConstraint(
                 fields=["course", "order"], name="unique_order_per_course"
             ),
