@@ -126,17 +126,13 @@ class CoursesViewSet(ModelViewSet):
                 if course.is_archived:
                     raise ValidationError("Cannot enroll in archived course.")
 
-                # -------- Edge Case 2 --------
-                # Duplicate enrollment
                 if Enrolled.objects.filter(course=course, user=request.user).exists():
                     raise ValidationError("Already enrolled.")
 
-                # -------- Edge Case 3 --------
-                # Course full
+
                 if course.students.count() >= course.seats:
                     raise ValidationError("Course is full.")
 
-                # Safe insert
                 Enrolled.objects.create(course=course, user=request.user)
 
             return Response(
@@ -163,7 +159,6 @@ class CoursesViewSet(ModelViewSet):
         )
 
 
-# Subsections
 
 
 class SubSectionViewSet(ModelViewSet):
