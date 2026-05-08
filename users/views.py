@@ -12,7 +12,7 @@ from rest_framework import viewsets, mixins, generics
 from .serializers import StudentProfileSerailizers, InstructorProfileSerializers
 from .permissions import isProfileUser
 USER = get_user_model()
-# Create your views here.
+
 
 class registerViewSet(APIView):
     def post(self,request):
