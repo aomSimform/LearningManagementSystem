@@ -29,8 +29,6 @@ from .serializers import (
     assignmentSerializer,
 )
 
-# Courses
-
 
 class CoursesViewSet(ModelViewSet):
     queryset = Courses.objects.all()
@@ -124,11 +122,7 @@ class CoursesViewSet(ModelViewSet):
     def enroll(self, request, pk=None):
         try:
             with transaction.atomic():
-                # Lock course row until transaction finishes
                 course = Courses.objects.select_for_update().get(pk=pk)
-
-                # -------- Edge Case 1 --------
-                # Archived course
                 if course.is_archived:
                     raise ValidationError("Cannot enroll in archived course.")
 
